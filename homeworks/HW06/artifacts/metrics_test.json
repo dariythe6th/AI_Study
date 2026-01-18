@@ -1,0 +1,32 @@
+[
+  {
+    "model": "Dummy",
+    "accuracy": 0.5427,
+    "f1_macro": 0.2345,
+    "roc_auc_ovr": 0.5
+  },
+  {
+    "model": "LogisticRegression",
+    "accuracy": 0.7237,
+    "f1_macro": 0.6651,
+    "roc_auc_ovr": 0.8481
+  },
+  {
+    "model": "DecisionTree",
+    "accuracy": 0.7943,
+    "f1_macro": 0.7385,
+    "roc_auc_ovr": 0.8597
+  },
+  {
+    "model": "RandomForest",
+    "accuracy": 0.8587,
+    "f1_macro": 0.8174,
+    "roc_auc_ovr": 0.9447
+  },
+  {
+    "model": "HistGradientBoosting",
+    "accuracy": 0.8877,
+    "f1_macro": 0.8616,
+    "roc_auc_ovr": 0.9543
+  }
+]
