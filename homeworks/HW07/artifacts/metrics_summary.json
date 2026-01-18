@@ -1,0 +1,41 @@
+{
+  "dataset1": {
+    "KMeans": {
+      "silhouette": 0.522,
+      "davies_bouldin": 0.685,
+      "calinski_harabasz": 11786.955
+    },
+    "DBSCAN": {
+      "silhouette": 0.876,
+      "davies_bouldin": 0.17,
+      "calinski_harabasz": 1091.657,
+      "noise_ratio": 0.997
+    }
+  },
+  "dataset2": {
+    "KMeans": {
+      "silhouette": 0.307,
+      "davies_bouldin": 1.323,
+      "calinski_harabasz": 3573.393
+    },
+    "DBSCAN": {
+      "silhouette": 0.581,
+      "davies_bouldin": 0.578,
+      "calinski_harabasz": 2758.123,
+      "noise_ratio": 0.918
+    }
+  },
+  "dataset3": {
+    "KMeans": {
+      "silhouette": 0.316,
+      "davies_bouldin": 1.158,
+      "calinski_harabasz": 6957.163
+    },
+    "DBSCAN": {
+      "silhouette": 0.812,
+      "davies_bouldin": 0.245,
+      "calinski_harabasz": 3564.021,
+      "noise_ratio": 0.996
+    }
+  }
+}
