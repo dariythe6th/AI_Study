@@ -1,8 +1,10 @@
 {
   "DecisionTree": {
     "params": {
+      "ccp_alpha": 0.0,
       "max_depth": 10,
-      "min_samples_leaf": 5
+      "min_samples_leaf": 5,
+      "min_samples_split": 10
     },
     "cv_f1": 0.7402070504779554
   },
