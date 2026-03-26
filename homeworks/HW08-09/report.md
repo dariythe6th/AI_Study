@@ -80,8 +80,6 @@
 - **E4 (EarlyStopping)**  
   Модель с Dropout обучалась с использованием EarlyStopping, который останавливает обучение при отсутствии улучшения validation loss.
 
----
-
 ## 6. Часть B (S09): LR, оптимизаторы, weight decay (O1–O3)
 
 - **O1**  
@@ -94,8 +92,6 @@
     - momentum = 0.9
     - weight_decay = 1e-4
     - lr = 0.1
-
----
 
 ## 7. Результаты
 
