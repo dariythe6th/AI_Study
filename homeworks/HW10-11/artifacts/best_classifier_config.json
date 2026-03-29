@@ -1,1 +1,1 @@
-{"arch": "resnet18", "finetune": "layer4", "lr": 0.001}
+{"arch": "resnet18", "finetune": "layer4", "batch_size": 64, "lr": 0.001, "dataset": "STL10", "seed": 42, "transforms": "T.Resize((96, 96)), T.ToTensor(), T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])", "notes": "Used base_transform for training and validation"}

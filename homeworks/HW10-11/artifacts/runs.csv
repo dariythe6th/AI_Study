@@ -1,7 +1,27 @@
-experiment_id,task,dataset,optimizer,lr,epochs_trained,best_val_accuracy,mean_iou,notes
-C1,classification,STL10,Adam,0.001,5.0,0.316,,
-C2,classification,STL10,Adam,0.001,5.0,0.301,,
-C3,classification,STL10,Adam,0.001,5.0,0.807,,
-C4,classification,STL10,Adam,0.001,5.0,0.864,,
-V1,segmentation,OxfordPet,,,,,0.0066177571492738434,Base Argmax
-V2,segmentation,OxfordPet,,,,,0.0066177571492738434,Alternative (same model for demo)
+experiment_id,task,dataset,best_val_accuracy,seed,model_summary,test_accuracy,mean_iou,precision,recall,notes
+C1,classification,STL10,0.336,42,"SimpleCNN(
+  (net): Sequential(
+    (0): Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): ReLU()
+    (2): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (3): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (4): ReLU()
+    (5): AdaptiveAvgPool2d(output_size=(1, 1))
+  )
+  (fc): Linear(in_features=64, out_features=10, bias=True)
+)",,,,,
+C2,classification,STL10,0.332,42,"SimpleCNN(
+  (net): Sequential(
+    (0): Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): ReLU()
+    (2): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (3): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (4): ReLU()
+    (5): AdaptiveAvgPool2d(output_size=(1, 1))
+  )
+  (fc): Linear(in_features=64, out_features=10, bias=True)
+)",,,,,
+C3,classification,STL10,0.814,42,ResNet18 with modified FC layer,,,,,
+C4,classification,STL10,0.865,42,ResNet18 with modified FC layer,0.84425,,,,
+V1,segmentation,Oxford-IIIT Pet,,42,,,0.0,0.0,0.0,Argmax
+V2,segmentation,Oxford-IIIT Pet,,42,,,0.0,0.0,0.0,Threshold 0.7
