@@ -1,5 +1,5 @@
-exp_id,dataset,seed,optimizer,lr,dropout,batchnorm,weight_decay,momentum,epochs_ran,best_val_acc,best_val_loss,model_summary
-E3,Sklearn Digits,42,adam,0.001,0.0,True,0.0,0.9,6,0.986046511627907,0.15964327877344087,"MLP(
+experiment_id,dataset,seed,optimizer,lr,dropout,batchnorm,weight_decay,momentum,epochs_trained,best_val_accuracy,best_val_loss,model_summary
+E3,Sklearn Digits,42,adam,0.001,0.0,True,0.0,0.9,6,0.986046511627907,0.15963324017302935,"MLP(
   (net): Sequential(
     (0): Linear(in_features=64, out_features=256, bias=True)
     (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
@@ -10,7 +10,7 @@ E3,Sklearn Digits,42,adam,0.001,0.0,True,0.0,0.9,6,0.986046511627907,0.159643278
     (6): Linear(in_features=128, out_features=10, bias=True)
   )
 )"
-E4,Sklearn Digits,42,adam,0.001,0.3,False,0.0,0.9,20,0.986046511627907,0.09385080399901367,"MLP(
+E4,Sklearn Digits,42,adam,0.001,0.3,False,0.0,0.9,20,0.986046511627907,0.09388221207746239,"MLP(
   (net): Sequential(
     (0): Linear(in_features=64, out_features=256, bias=True)
     (1): ReLU()
@@ -21,7 +21,7 @@ E4,Sklearn Digits,42,adam,0.001,0.3,False,0.0,0.9,20,0.986046511627907,0.0938508
     (6): Linear(in_features=128, out_features=10, bias=True)
   )
 )"
-O3,Sklearn Digits,42,sgd,0.1,0.0,False,0.0001,0.9,6,0.9627906976744186,0.14788774092530096,"MLP(
+O3,Sklearn Digits,42,sgd,0.1,0.0,False,0.0001,0.9,6,0.9627906976744186,0.14788769019204517,"MLP(
   (net): Sequential(
     (0): Linear(in_features=64, out_features=256, bias=True)
     (1): ReLU()
@@ -30,7 +30,7 @@ O3,Sklearn Digits,42,sgd,0.1,0.0,False,0.0001,0.9,6,0.9627906976744186,0.1478877
     (4): Linear(in_features=128, out_features=10, bias=True)
   )
 )"
-E1,Sklearn Digits,42,adam,0.001,0.0,False,0.0,0.9,6,0.9441860465116279,0.340033334770868,"MLP(
+E1,Sklearn Digits,42,adam,0.001,0.0,False,0.0,0.9,6,0.9441860465116279,0.3400332929090012,"MLP(
   (net): Sequential(
     (0): Linear(in_features=64, out_features=256, bias=True)
     (1): ReLU()
@@ -39,7 +39,7 @@ E1,Sklearn Digits,42,adam,0.001,0.0,False,0.0,0.9,6,0.9441860465116279,0.3400333
     (4): Linear(in_features=128, out_features=10, bias=True)
   )
 )"
-E2,Sklearn Digits,42,adam,0.001,0.3,False,0.0,0.9,6,0.9302325581395349,0.41724302976630456,"MLP(
+E2,Sklearn Digits,42,adam,0.001,0.3,False,0.0,0.9,6,0.9302325581395349,0.41724306594493776,"MLP(
   (net): Sequential(
     (0): Linear(in_features=64, out_features=256, bias=True)
     (1): ReLU()
@@ -50,7 +50,7 @@ E2,Sklearn Digits,42,adam,0.001,0.3,False,0.0,0.9,6,0.9302325581395349,0.4172430
     (6): Linear(in_features=128, out_features=10, bias=True)
   )
 )"
-O1,Sklearn Digits,42,adam,0.1,0.0,False,0.0,0.9,6,0.6465116279069767,0.8260719160700953,"MLP(
+O1,Sklearn Digits,42,adam,0.1,0.0,False,0.0,0.9,6,0.6372093023255814,0.8354756651922713,"MLP(
   (net): Sequential(
     (0): Linear(in_features=64, out_features=256, bias=True)
     (1): ReLU()

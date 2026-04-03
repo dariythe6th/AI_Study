@@ -5,6 +5,6 @@
     "batchnorm": true,
     "weight_decay": 0.0,
     "momentum": 0.9,
-    "dataset": "Sklearn Digits",
+    "dataset": "KMNIST",
     "seed": 42
 }
