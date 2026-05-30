@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 
 class RecommendRequest(BaseModel):
     text: str = Field(..., description="Описание настроения или ситуации")
-    limit: int = Field(10, ge=1, le=50, description="Количество рекомендаций")
+    limit: int = Field(10, ge=1, le=50)
 
 class TrackRecommendation(BaseModel):
     song_name: str

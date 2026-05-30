@@ -1,7 +1,8 @@
 import logging
 import numpy as np
-from typing import List, Dict, Any
 import pandas as pd
+import random
+from typing import List, Dict, Any
 
 from src.data.loader import load_and_clean_data
 from src.models.embedding import TextEncoder
@@ -17,48 +18,73 @@ class MoodTuneEngine:
         self.vector_store = VectorStore(settings.CHROMA_PERSIST_DIRECTORY)
         self.mood_detector = MoodDetector()
         self.dataset: pd.DataFrame | None = None
-        logger.info("MoodTuneEngine initialized — focus on mood & vibe")
 
     def initialize(self, csv_path: str = "data/high_popularity_spotify_data.csv"):
         if self.dataset is not None:
             return
-
         df = load_and_clean_data(csv_path)
+        # Добавляем колонку 'mood' на основе аудио-фич
+        df['mood'] = df.apply(self._infer_mood_from_features, axis=1)
         self.dataset = df
-        self._index_with_mood_understanding(df)
-        logger.info(f"Engine ready with {len(df)} tracks — mood-aware indexing")
+        self._index_tracks(df)
+        logger.info(f"Engine ready with {len(df)} tracks")
 
-    def _index_with_mood_understanding(self, df: pd.DataFrame):
-        """Создаём эмбеддинги с сильным акцентом на настроение и атмосферу"""
+    def _infer_mood_from_features(self, row: pd.Series) -> str:
+        """Определяет настроение на основе energy, valence, danceability, tempo"""
+        energy = float(row.get('energy', 0.5))
+        valence = float(row.get('valence', 0.5))
+        dance = float(row.get('danceability', 0.5))
+        tempo = float(row.get('tempo', 120))
+
+        if energy > 0.8 and valence > 0.8 and dance > 0.7:
+            return 'ecstatic'
+        if energy > 0.7 and valence > 0.7:
+            return 'happy'
+        if energy > 0.8 and tempo > 120:
+            return 'energetic'
+        if energy < 0.3 and valence < 0.3:
+            return 'depressed'
+        if energy < 0.4 and valence < 0.5:
+            return 'melancholic'
+        if energy < 0.5 and tempo < 100:
+            return 'chill'
+        if dance > 0.7 and energy > 0.6:
+            return 'dance'
+        if valence > 0.7 and energy < 0.6:
+            return 'romantic'
+        if energy > 0.6 and valence < 0.4:
+            return 'angry'
+        return 'neutral'
+
+    def _index_tracks(self, df: pd.DataFrame):
+        """Создаёт богатые текстовые описания треков для эмбеддингов"""
         track_texts = []
         ids = []
         metadatas = []
 
         for idx, row in df.iterrows():
-            mood = row.get('mood', 'neutral')
+            mood = row['mood']
             energy = float(row.get('energy', 0.5))
             dance = float(row.get('danceability', 0.5))
             valence = float(row.get('valence', 0.5))
             tempo = float(row.get('tempo', 120))
 
-            # === Ключевое улучшение: очень описательный текст ===
-            vibe_text = f"""
-            Song title: {row.get('track_name', '')}
-            Artist: {row.get('track_artist', '')}
-            Overall mood: {mood}
-            Emotional atmosphere: {self._describe_emotion(energy, valence)}
-            Energy feel: {self._describe_energy(energy)}
-            Movement quality: {self._describe_dance(dance)}
-            Tempo character: {self._describe_tempo(tempo)}
-            Genre vibe: {row.get('playlist_genre', 'Various')}
-            Suggested for: {self._suggest_context(mood, energy, valence)}
-            """
+            text_parts = [
+                f"Song: {row['track_name']}",
+                f"Artist: {row['track_artist']}",
+                f"Mood: {mood}",
+                f"Energy: {'high' if energy > 0.7 else 'medium' if energy > 0.4 else 'low'}",
+                f"Danceability: {'high' if dance > 0.7 else 'medium' if dance > 0.4 else 'low'}",
+                f"Valence: {'positive' if valence > 0.6 else 'neutral' if valence > 0.4 else 'negative'}",
+                f"Tempo: {'fast' if tempo > 120 else 'moderate' if tempo > 90 else 'slow'}",
+                f"Genre: {row.get('playlist_genre', 'Various')}"
+            ]
+            vibe_text = " ".join(text_parts)
 
             track_id = str(row.get('track_id', f"track_{idx}"))
-
             metadata = {
-                "song_name": row.get('track_name', 'Unknown'),
-                "artist_name": row.get('track_artist', 'Unknown'),
+                "song_name": row['track_name'],
+                "artist_name": row['track_artist'],
                 "album": row.get('track_album_name', 'Unknown'),
                 "mood": mood,
                 "popularity": int(row.get('track_popularity', 50)),
@@ -68,65 +94,29 @@ class MoodTuneEngine:
                 "tempo": tempo,
                 "genre": row.get('playlist_genre', 'Various')
             }
-
-            track_texts.append(vibe_text.strip())
+            track_texts.append(vibe_text)
             ids.append(track_id)
             metadatas.append(metadata)
 
         embeddings = self.encoder.encode(track_texts)
         self.vector_store.add_tracks(ids, embeddings, metadatas)
-        logger.info(f"Indexed {len(track_texts)} tracks with deep mood understanding")
+        logger.info(f"Indexed {len(track_texts)} tracks with rich mood description")
 
-    # ==================== ВСПОМОГАТЕЛЬНЫЕ ОПИСАНИЯ ====================
-    def _describe_emotion(self, energy, valence):
-        if valence > 0.65 and energy > 0.6: return "joyful uplifting"
-        if valence < 0.4 and energy < 0.5: return "melancholic introspective"
-        if valence > 0.7: return "positive bright"
-        if valence < 0.35: return "sad emotional"
-        return "complex nuanced"
-
-    def _describe_energy(self, energy):
-        if energy > 0.8: return "high powered explosive"
-        if energy > 0.65: return "energetic driving"
-        if energy > 0.45: return "moderate balanced"
-        return "calm relaxed"
-
-    def _describe_dance(self, dance):
-        if dance > 0.8: return "very danceable groovy"
-        if dance > 0.65: return "rhythmic danceable"
-        if dance > 0.45: return "light movement"
-        return "stationary calm"
-
-    def _describe_tempo(self, tempo):
-        if tempo > 140: return "fast upbeat"
-        if tempo > 110: return "mid-tempo flowing"
-        if tempo > 80: return "moderate"
-        return "slow atmospheric"
-
-    def _suggest_context(self, mood, energy, valence):
-        if mood == "happy" or valence > 0.7:
-            return "celebration, party, good mood, sunny day"
-        if mood == "sad" or valence < 0.35:
-            return "rainy day, reflection, emotional moments, night drive"
-        if energy > 0.75:
-            return "workout, motivation, energetic activity"
-        if energy < 0.4:
-            return "relaxation, study, sleep, deep focus"
-        return "general listening, background, various situations"
-
-    # ==================== РЕКОМЕНДАЦИИ ====================
     def get_recommendations(self, query: str, limit: int = 12) -> Dict[str, Any]:
         detected_mood = self.mood_detector.detect(query)
         logger.info(f"Query: '{query}' → Mood: {detected_mood}")
 
         query_embedding = self.encoder.encode([query])[0]
+        raw_results = self.vector_store.search(query_embedding, n_results=limit * 3)
 
-        # Ищем много кандидатов
-        results = self.vector_store.search(query_embedding, n_results=limit * 6)
+        if not raw_results:
+            return {"personalized_recommendations": [], "top_5_songs_for_this_vibe": [], "detected_mood": detected_mood}
 
-        recommendations = self._mood_aware_reranking(results, limit, detected_mood, query)
+        # Разнообразие: не более одного трека на артиста
+        recommendations = self._diversify_recommendations(raw_results, detected_mood, limit)
 
-        top_songs = self._get_top_songs_for_mood(detected_mood, 5)
+        # Топ песен для этого настроения (разные артисты)
+        top_songs = self._get_diverse_top_songs(detected_mood, 5)
 
         return {
             "personalized_recommendations": recommendations,
@@ -134,113 +124,71 @@ class MoodTuneEngine:
             "detected_mood": detected_mood
         }
 
-    def _mood_aware_reranking(self, results: Dict, limit: int, detected_mood: str, query: str) -> List[Dict]:
-        if not results.get('ids') or not results['ids'][0]:
-            return []
+    def _diversify_recommendations(self, raw_results: List[Dict], detected_mood: str, limit: int) -> List[Dict]:
+        """Группирует по артистам, берёт лучший трек от каждого"""
+        artist_map = {}
+        for res in raw_results:
+            artist = res['metadata']['artist_name']
+            if artist not in artist_map:
+                artist_map[artist] = []
+            artist_map[artist].append(res)
 
         candidates = []
-        seen = set()
+        for artist, tracks in artist_map.items():
+            best = max(tracks, key=lambda x: x['score'])
+            candidates.append(best)
 
-        distances = results['distances'][0]
-        max_dist = max(distances) if distances else 1.0
-        min_dist = min(distances) if distances else 0.0
+        candidates.sort(key=lambda x: x['score'], reverse=True)
+        final = candidates[:limit]
 
-        for i in range(len(results['ids'][0])):
-            if len(candidates) >= limit * 3:
-                break
-
-            meta = results['metadatas'][0][i]
-            artist = meta['artist_name']
-            if artist in seen:
-                continue
-            seen.add(artist)
-
-            raw_distance = distances[i]
-
-            if max_dist - min_dist > 0.001:
-                normalized_score = (max_dist - raw_distance) / (max_dist - min_dist)
-            else:
-                normalized_score = 1.0 - raw_distance
-
-            mood_bonus = 0.45 if meta.get('mood') == detected_mood else 0.0
-            popularity_bonus = meta.get('popularity', 50) / 300.0
-
-            final_score = (
-                    normalized_score * 0.55 +
-                    mood_bonus * 0.35 +
-                    popularity_bonus * 0.10
-            )
-
-            match_percentage = min(int(final_score * 100), 100)
-
-            # === Красивые объяснения ===
-            why = self._generate_why_it_matches(
-                meta, detected_mood, query, match_percentage
-            )
-
-            candidates.append({
+        recommendations = []
+        for res in final:
+            meta = res['metadata']
+            match_pct = min(int(res['score'] * 100), 100)
+            # Генерация объяснения
+            why = self._generate_why_it_matches(meta, detected_mood, match_pct)
+            recommendations.append({
                 "song_name": meta['song_name'],
                 "artist_name": meta['artist_name'],
                 "album": meta['album'],
                 "mood": meta['mood'],
                 "popularity": meta['popularity'],
-                "match_percentage": match_percentage,
-                "energy": meta['energy'],
-                "danceability": meta['danceability'],
-                "valence": meta['valence'],
-                "tempo": meta['tempo'],
+                "match_percentage": match_pct,
+                "energy": meta.get('energy'),
+                "danceability": meta.get('danceability'),
                 "why_it_matches": why
             })
+        return recommendations
 
-        candidates.sort(key=lambda x: (x['match_percentage'], x['popularity']), reverse=True)
-        return candidates[:limit]
-
-    def _generate_why_it_matches(self, meta: dict, detected_mood: str, query: str, percentage: int) -> str:
-        """Генерирует красивые естественные объяснения"""
-        song = meta['song_name']
-        artist = meta['artist_name']
-        mood = meta.get('mood', 'neutral')
-        energy = meta.get('energy', 0.5)
-
+    def _generate_why_it_matches(self, meta: dict, detected_mood: str, match_pct: int) -> str:
         phrases = [
             f"Идеально передаёт атмосферу вашего запроса",
-            f"Отлично подходит под настроение «{query}»",
+            f"Отлично подходит под настроение «{detected_mood}»",
             f"Этот трек очень точно ловит вайб, который вы описали",
             f"Мощное попадание в настроение",
-            f"Одна из лучших песен для такого состояния",
-            f"Классика для такого настроения",
-            f"Почти идеально соответствует вашему описанию",
-            f"Эмоционально очень близко к тому, что вы ищете",
-            f"Этот трек словно создан для вашего запроса",
-            f"Сильное совпадение по энергетике и эмоциям",
+            f"Классика для такого состояния"
         ]
-
-        # Дополнительная персонализация
-        if mood == detected_mood and percentage > 75:
-            phrases.extend([
-                f"Прямо в точку — идеальное попадание в {mood} настроение",
-                f"Один из лучших треков для {detected_mood} состояния",
-            ])
-
-        if energy > 0.75:
+        if meta.get('mood') == detected_mood and match_pct > 75:
+            phrases.append(f"Прямо в точку — идеальное попадание в {detected_mood} настроение")
+        if meta.get('energy', 0) > 0.75:
             phrases.append("Заряжает энергией и поднимает настроение")
-
-        import random
         return random.choice(phrases)
 
-    def _get_top_songs_for_mood(self, mood: str, top_n: int = 5) -> List[Dict]:
+    def _get_diverse_top_songs(self, mood: str, top_n: int = 5) -> List[Dict]:
         if self.dataset is None or 'mood' not in self.dataset.columns:
             return []
         subset = self.dataset[self.dataset['mood'] == mood]
         if subset.empty:
             return []
+        # Убираем дубликаты по артистам
+        subset = subset.drop_duplicates(subset=['track_artist'])
         top = subset.nlargest(top_n, 'track_popularity')
         return [
             {
                 "rank": i + 1,
                 "song_name": row['track_name'],
                 "artist_name": row['track_artist'],
-                "album": row.get('track_album_name'),
+                "album": row.get('track_album_name', 'Unknown'),
                 "popularity": int(row.get('track_popularity', 0))
             }
             for i, row in top.iterrows()
