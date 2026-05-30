@@ -1,0 +1,13 @@
+# Core
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic-settings==2.6.1
+
+# ML & data
+sentence-transformers==3.0.1
+chromadb==0.5.23
+pandas==2.2.3
+numpy==1.26.4
+
+# Auth
+python-jose[cryptography]==3.3.0
