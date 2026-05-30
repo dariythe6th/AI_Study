@@ -1,0 +1,11 @@
+# Security (обязательно изменить в production!)
+SECRET_KEY=super-secret-key-min-32-chars
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+# ML Model
+MODEL_NAME=all-MiniLM-L6-v2
+CHROMA_PERSIST_DIRECTORY=./chroma_db
+
+# Database
+DATABASE_URL=sqlite:///./moodtune.db
