@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodTune - AI Music Curation</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <div class="logo-icon">🎵</div>
+                    <div>
+                        <h1>MoodTune</h1>
+                        <p>AI Music Curation by Nexium</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" onclick="toggleTheme()" aria-label="Toggle theme">
+                        <i data-lucide="moon"></i>
+                    </button>
+                    <div id="auth-buttons">
+                        <button class="btn-secondary" onclick="showLoginModal()" id="login-btn">
+                            <i data-lucide="log-in"></i>
+                            Login
+                        </button>
+                        <button class="btn-primary" onclick="showRegisterModal()" id="register-btn">
+                            <i data-lucide="user-plus"></i>
+                            Sign Up
+                        </button>
+                    </div>
+                    <div id="user-menu" style="display: none;">
+                        <button class="btn-icon" onclick="showFavorites()" aria-label="View favorites">
+                            <i data-lucide="heart"></i>
+                            <span id="favorite-count">0</span>
+                        </button>
+                        <button class="btn-icon" onclick="showUserMenu()" id="user-avatar" aria-label="User menu">
+                            <i data-lucide="user"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- User Dropdown Menu -->
+        <div class="user-dropdown" id="user-dropdown" style="display: none;">
+            <div class="user-info">
+                <span id="dropdown-username">User</span>
+                <span id="dropdown-email" class="user-email">user@example.com</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" onclick="showFavorites()">
+                <i data-lucide="heart"></i>
+                My Favorites
+            </button>
+            <button class="dropdown-item" onclick="showSettings()">
+                <i data-lucide="settings"></i>
+                Settings
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout" onclick="logout()">
+                <i data-lucide="log-out"></i>
+                Logout
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <!-- Hero Section -->
+                <section class="hero">
+                    <div class="hero-content">
+                        <div class="hero-icon">✨</div>
+                        <h2>Transform Your Mood into Music</h2>
+                        <p>Describe any vibe, scene, or feeling to get your perfect soundtrack</p>
+
+                        <!-- Search Input -->
+                        <div class="search-container">
+                            <div class="search-box">
+                                <i data-lucide="search"></i>
+                                <input
+                                    type="text"
+                                    id="mood-input"
+                                    placeholder="Try: 'rainy coffee shop morning' or 'epic space adventure'"
+                                    onkeypress="handleKeyPress(event)"
+                                    aria-label="Describe your mood for music recommendations"
+                                >
+                                <button class="btn-primary" onclick="getRecommendations()" id="search-btn">
+                                    <i data-lucide="zap"></i>
+                                    <span>Generate</span>
+                                </button>
+                            </div>
+
+                            <!-- Quick Examples -->
+                            <div class="examples">
+                                <p>Quick examples: <small>(click to try)</small></p>
+                                <div class="example-chips" id="example-chips">
+                                    <!-- JavaScript will populate this with random examples -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results Section -->
+                <section class="results" id="results-section" style="display: none;">
+                    <div class="results-header">
+                        <div class="mood-badge" id="mood-badge">
+                            <span id="current-mood"></span>
+                            <button class="btn-clear" onclick="clearResults()" aria-label="Clear results">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+
+                        <!-- Mood visualization will be inserted here by JavaScript -->
+
+                        <h3>Your Curated Playlist</h3>
+                        <p class="results-subtitle" id="results-count">0 tracks matching your vibe</p>
+                    </div>
+
+                    <!-- Playlist Controls -->
+                    <div class="playlist-controls">
+                        <button class="btn-control" onclick="shufflePlaylist()">
+                            <i data-lucide="shuffle"></i>
+                            Shuffle Order
+                        </button>
+                        <div class="playlist-stats">
+                            <span id="total-duration">~0 min</span>
+                            <span>•</span>
+                            <span id="avg-match">0% avg match</span>
+                        </div>
+                    </div>
+
+                    <div class="tracks-container" id="tracks-container">
+                        <!-- Tracks will be inserted here by JavaScript -->
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn-secondary" onclick="backToSearch()">
+                            <i data-lucide="arrow-left"></i>
+                            Back to Search
+                        </button>
+                        <button class="btn-primary" onclick="exportPlaylist()">
+                            <i data-lucide="download"></i>
+                            Export Playlist
+                        </button>
+                        <button class="btn-secondary" onclick="sharePlaylist()">
+                            <i data-lucide="share-2"></i>
+                            Share
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Loading State -->
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <p>AI is curating your perfect soundtrack...</p>
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Modal -->
+                <div class="modal" id="error-modal" style="display: none;">
+                    <div class="modal-content error-modal">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Something went wrong</h3>
+                        <p id="error-message">Failed to get recommendations. Please try again.</p>
+                        <div class="error-actions">
+                            <button class="btn-secondary" onclick="hideError()">
+                                <i data-lucide="arrow-left"></i>
+                                Back to Search
+                            </button>
+                            <button class="btn-primary" onclick="retryLastSearch()">
+                                <i data-lucide="refresh-cw"></i>
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                 <section class="hero"><!-- Feature Highlights -->
+                    <div class="feature-highlights">
+                        <div class="feature">
+                            <div class="feature-icon">🎯</div>
+                            <h4>AI-Powered</h4>
+                            <p>Advanced algorithms understand your mood</p>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">⚡</div>
+                            <h4>Instant Results</h4>
+                            <p>Get personalized playlists in seconds</p>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">🎨</div>
+                            <h4>Creative Inspiration</h4>
+                            <p>Discover music for any scenario</p>
+                        </div>
+                    </div></section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>Powered by AI • MoodTune v3.0</p>
+                <div class="footer-links">
+                    <a href="#" onclick="showAbout()">About</a>
+                    <a href="#" onclick="showPrivacy()">Privacy</a>
+                    <a href="#" onclick="showTerms()">Terms</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal" style="display: none;">
+        <div class="modal-content auth-modal">
+            <div class="modal-header">
+                <h3>Welcome Back</h3>
+                <button class="btn-close" onclick="closeModal('login-modal')" aria-label="Close modal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn-primary full-width">
+                    <i data-lucide="log-in"></i>
+                    Sign In
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="#" onclick="showRegisterModal()">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="register-modal" style="display: none;">
+        <div class="modal-content auth-modal">
+            <div class="modal-header">
+                <h3>Create Account</h3>
+                <button class="btn-close" onclick="closeModal('register-modal')" aria-label="Close modal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" required placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required placeholder="Create a password" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Confirm Password</label>
+                    <input type="password" id="register-confirm-password" required placeholder="Confirm your password">
+                </div>
+                <button type="submit" class="btn-primary full-width">
+                    <i data-lucide="user-plus"></i>
+                    Create Account
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p>Already have an account? <a href="#" onclick="showLoginModal()">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Favorites Modal -->
+    <div class="modal" id="favorites-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Your Favorite Tracks</h3>
+                <button class="btn-close" onclick="closeModal('favorites-modal')" aria-label="Close modal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="favorites-list">
+                <!-- Favorites will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal" id="about-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>About MoodTune</h3>
+                <button class="btn-close" onclick="closeModal('about-modal')" aria-label="Close modal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>MoodTune uses advanced AI to curate personalized music playlists based on your mood, activities, or any scene you describe.</p>
+                <p>Simply tell us how you're feeling or what you're doing, and we'll create the perfect soundtrack for your moment.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
