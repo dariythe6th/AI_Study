@@ -135,17 +135,17 @@ class MoodTuneEngine:
 
         candidates = []
         for artist, tracks in artist_map.items():
-            best = max(tracks, key=lambda x: x['score'])
+            best = max(tracks, key=lambda x: x['similarity'])  # similarity, а не score
             candidates.append(best)
 
-        candidates.sort(key=lambda x: x['score'], reverse=True)
+        candidates.sort(key=lambda x: x['similarity'], reverse=True)
         final = candidates[:limit]
 
         recommendations = []
         for res in final:
             meta = res['metadata']
-            match_pct = min(int(res['score'] * 100), 100)
-            # Генерация объяснения
+            similarity = res['similarity']
+            match_pct = min(int(similarity * 100), 100)  # теперь правильно
             why = self._generate_why_it_matches(meta, detected_mood, match_pct)
             recommendations.append({
                 "song_name": meta['song_name'],

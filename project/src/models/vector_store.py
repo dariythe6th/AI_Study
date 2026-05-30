@@ -34,17 +34,24 @@ class VectorStore:
         logger.info(f"Added/updated {len(ids)} tracks")
 
     def search(self, query_embedding: np.ndarray, n_results: int = 20) -> List[Dict]:
+        """
+        Возвращает список словарей с ключами: 'id', 'similarity' (0..1), 'metadata'
+        """
         if self.collection is not None:
             results = self.collection.query(
                 query_embeddings=[query_embedding.tolist()],
-                n_results=n_results
+                n_results=n_results,
+                include=["metadatas", "distances"]
             )
             hits = []
             if results.get('ids') and results['ids'][0]:
                 for i in range(len(results['ids'][0])):
+                    # distance (cosine distance) -> similarity = 1 - distance
+                    distance = results['distances'][0][i]
+                    similarity = 1.0 - distance
                     hits.append({
                         'id': results['ids'][0][i],
-                        'score': results['distances'][0][i],
+                        'similarity': similarity,
                         'metadata': results['metadatas'][0][i] if results.get('metadatas') else {}
                     })
             return hits
@@ -55,6 +62,7 @@ class VectorStore:
             sims = []
             for vid, vec, meta in self.local_vectors:
                 v_norm = vec / (np.linalg.norm(vec) + 1e-9)
-                sims.append((vid, float(np.dot(v_norm, q_norm)), meta))
+                similarity = float(np.dot(v_norm, q_norm))
+                sims.append((vid, similarity, meta))
             sims.sort(key=lambda x: x[1], reverse=True)
-            return [{'id': s[0], 'score': s[1], 'metadata': s[2]} for s in sims[:n_results]]
+            return [{'id': s[0], 'similarity': s[1], 'metadata': s[2]} for s in sims[:n_results]]
